@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import random
+import json
 
 window = Tk()
 window.title("Password Manager")
@@ -25,14 +26,29 @@ def generate_password():
 
 
 def save_data():
+    stored_data = {
+        enter_website.get(): {
+            "email": enter_user.get(),
+            "password": new_password.get()
+        }
+    }
     if len(enter_website.get()) == 0 or len(enter_user.get()) == 0 or len(new_password.get()) == 0:
         messagebox.showwarning(title="Error", message="Please fill all the empty fields.")
     else:
-        yes = messagebox.askyesno(title="Saving",
-                                  message=f"Are you sure you want to save these details? \n{enter_website.get()}\n{enter_user.get()}\n{new_password.get()}")
+        yes = messagebox.askyesno(title="Saving", message=f"Are you sure you want to save these details? "
+                                          f"\n{enter_website.get()}\n{enter_user.get()}\n{new_password.get()}")
         if yes:
-            with open("data.txt", "a") as data:
-                data.write(f"{enter_website.get()} | {enter_user.get()} | {new_password.get()}\n")
+            try:
+                with open("data.json", "r") as data:
+                    data_file = json.load(data)
+            except FileNotFoundError:
+                with open("data.json", "w") as data:
+                    json.dump(stored_data, data, indent=4)
+            else:
+                data_file.update(stored_data)
+                with open("data.json", "w") as data:
+                    json.dump(data_file, data, indent=4)
+            finally:
                 enter_website.delete(0, END)
                 enter_user.delete(0, END)
                 new_password.delete(0, END)
